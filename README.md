@@ -8,6 +8,8 @@
 - **主操作按钮**：支持通过 `layout_oblIsPrimary` 属性标记主操作按钮，主按钮会盖在装饰线之上
 - **自定义装饰**：支持通过 `oblDividerLayout` 属性自定义装饰布局（如分割线），装饰 View 与操作项一样底部对齐
 
+![./screenshot1.jpg](./screenshot1.jpg)
+
 ## 快速开始
 
 ### 添加依赖
