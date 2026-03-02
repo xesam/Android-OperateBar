@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="OperateBarLayout">
+        <attr name="oblDividerLayout" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="OperateBarLayout_Layout">
+        <attr name="layout_oblIsPrimary" format="boolean" />
+    </declare-styleable>
+
+</resources>

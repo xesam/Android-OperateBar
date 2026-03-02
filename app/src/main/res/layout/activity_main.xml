@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF8F4EE"
+    tools:context=".example.MainActivity">
+
+    <TextView
+        android:id="@+id/content_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:text="OperateBarLayout Demo"
+        android:textColor="#FF1F1A16"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/content_desc"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="24dp"
+        android:text="所有子 View 默认底部对齐并按顺序水平等分；主操作通过 layout_oblIsPrimary 标记并盖住顶部线。"
+        android:textColor="#FF5A5047"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/content_title" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/toggle_primary_button"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="24dp"
+        android:text="隐藏主操作"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/content_desc" />
+
+    <TextView
+        android:id="@+id/divider_off_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="24dp"
+        android:text="示例 A：不使用装饰布局"
+        android:textColor="#FF1F1A16"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toggle_primary_button" />
+
+    <io.github.xesam.android.operatebar.OperateBarLayout
+        android:id="@+id/operate_bar_no_divider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:background="#FFFFFEFC"
+        android:paddingStart="12dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider_off_label">
+
+        <com.google.android.material.button.MaterialButton
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:text="返回" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/action_primary_no_divider"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:text="提交"
+            app:layout_oblIsPrimary="true" />
+
+    </io.github.xesam.android.operatebar.OperateBarLayout>
+
+    <TextView
+        android:id="@+id/divider_on_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="24dp"
+        android:text="示例 B：使用自定义装饰布局 + 复杂子项(RelativeLayout) + 主操作盖线"
+        android:textColor="#FF1F1A16"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/operate_bar_no_divider" />
+
+    <io.github.xesam.android.operatebar.OperateBarLayout
+        android:id="@+id/operate_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="#FFFFFEFC"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider_on_label"
+        app:oblDividerLayout="@layout/divider_default">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/action_cancel"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="取消"
+            android:textColor="#FF5A5047" />
+
+        <RelativeLayout
+            android:id="@+id/action_primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_oblIsPrimary="true">
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.Material3.Button"
+                android:layout_width="98dp"
+                android:layout_height="108dp"
+                android:layout_centerHorizontal="true"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="主操作" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/action_secondary"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="#12F57C00"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
+
+            <TextView
+                android:id="@+id/complex_item_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="Left"
+                android:textColor="#FF5A5047"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/complex_item_right"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="Right"
+                android:textColor="#FF5A5047"
+                android:textSize="12sp" />
+        </RelativeLayout>
+    </io.github.xesam.android.operatebar.OperateBarLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
