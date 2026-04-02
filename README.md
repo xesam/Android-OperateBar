@@ -15,7 +15,7 @@
 ### 添加依赖
 
 ```gradle
-implementation 'io.github.xesam:operatebar:1.0.0'
+implementation 'io.github.xesam:android-operatebar:0.0.1'
 ```
 
 ### 基本使用
