@@ -160,7 +160,6 @@ public class OperateBarLayout extends FrameLayout {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
         layoutChildrenEvenly();
         layoutDecorView();
     }
@@ -281,10 +280,7 @@ public class OperateBarLayout extends FrameLayout {
         if (params instanceof LayoutParams) {
             return (LayoutParams) params;
         }
-        if (params instanceof FrameLayout.LayoutParams) {
-            return new LayoutParams((FrameLayout.LayoutParams) params);
-        }
-        return new LayoutParams(params);
+        return generateLayoutParams(params);
     }
 
     private int getSlotLeft(int contentLeft, int contentWidth, int totalSlots, int slotIndex) {
@@ -337,6 +333,12 @@ public class OperateBarLayout extends FrameLayout {
 
     @Override
     protected LayoutParams generateLayoutParams(ViewGroup.LayoutParams p) {
+        if (p instanceof LayoutParams) {
+            return new LayoutParams((LayoutParams) p);
+        }
+        if (p instanceof FrameLayout.LayoutParams) {
+            return new LayoutParams((FrameLayout.LayoutParams) p);
+        }
         return new LayoutParams(p);
     }
 
@@ -361,6 +363,12 @@ public class OperateBarLayout extends FrameLayout {
         public LayoutParams(@NonNull FrameLayout.LayoutParams source) {
             super(source);
             gravity = source.gravity;
+        }
+
+        public LayoutParams(@NonNull LayoutParams source) {
+            super(source);
+            gravity = source.gravity;
+            isPrimary = source.isPrimary;
         }
     }
 }
