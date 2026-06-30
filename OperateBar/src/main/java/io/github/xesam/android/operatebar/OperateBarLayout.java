@@ -16,6 +16,11 @@ public class OperateBarLayout extends FrameLayout {
 
     private View decorView;
 
+    @Nullable
+    public View getDecorView() {
+        return decorView;
+    }
+
     public OperateBarLayout(@NonNull Context context) {
         this(context, null);
     }
@@ -26,9 +31,6 @@ public class OperateBarLayout extends FrameLayout {
 
     public OperateBarLayout(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        setClipChildren(false);
-        setClipToPadding(false);
-
         try (TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.OperateBarLayout, defStyleAttr, 0)) {
             int decorLayoutRes = a.getResourceId(R.styleable.OperateBarLayout_oblDividerLayout, 0);
             if (decorLayoutRes != 0) {
@@ -58,10 +60,10 @@ public class OperateBarLayout extends FrameLayout {
         int contentRight = Math.max(contentLeft, widthSize - paddingRight);
         int contentWidth = Math.max(0, contentRight - contentLeft);
 
-        int visibleChildCount = countVisibleChildren();
+        int[] slotWidths = buildSlotWidths(contentWidth);
 
         int tallestChild = measureChildren(widthMeasureSpec, heightMeasureSpec,
-                widthMode, heightMode, heightSize, contentLeft, contentWidth, visibleChildCount);
+                widthMode, heightMode, heightSize, slotWidths);
 
         int desiredWidth = computeDesiredWidth(widthMode, widthSize, paddingLeft, paddingRight);
         int desiredHeight = tallestChild + paddingTop + paddingBottom;
@@ -85,8 +87,7 @@ public class OperateBarLayout extends FrameLayout {
     }
 
     private int measureChildren(int widthMeasureSpec, int heightMeasureSpec,
-            int widthMode, int heightMode, int heightSize,
-            int contentLeft, int contentWidth, int visibleChildCount) {
+            int widthMode, int heightMode, int heightSize, int[] slotWidths) {
         int tallestChild = 0;
         int childSlotIndex = 0;
 
@@ -97,8 +98,8 @@ public class OperateBarLayout extends FrameLayout {
             }
 
             FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) child.getLayoutParams();
-            int childWidthSpec = createChildWidthSpec(widthMeasureSpec, widthMode, heightMode,
-                    contentLeft, contentWidth, visibleChildCount, lp, childSlotIndex);
+            int childWidthSpec = createChildWidthSpec(widthMeasureSpec, widthMode,
+                    slotWidths, lp, childSlotIndex);
 
             int childHeightSpec = createChildHeightSpec(lp, heightMode, heightSize);
             child.measure(childWidthSpec, childHeightSpec);
@@ -112,20 +113,14 @@ public class OperateBarLayout extends FrameLayout {
         return tallestChild;
     }
 
-    private int createChildWidthSpec(int widthMeasureSpec, int widthMode, int heightMode,
-            int contentLeft, int contentWidth, int visibleChildCount,
-            FrameLayout.LayoutParams lp, int childSlotIndex) {
-        int paddingLeft = getPaddingLeft();
-        int paddingRight = getPaddingRight();
-
-        if (widthMode == MeasureSpec.UNSPECIFIED || visibleChildCount == 0) {
+    private int createChildWidthSpec(int widthMeasureSpec, int widthMode,
+            int[] slotWidths, FrameLayout.LayoutParams lp, int childSlotIndex) {
+        if (widthMode == MeasureSpec.UNSPECIFIED || slotWidths.length == 0) {
             return getChildMeasureSpec(widthMeasureSpec,
-                    paddingLeft + paddingRight + lp.leftMargin + lp.rightMargin, lp.width);
+                    getPaddingLeft() + getPaddingRight() + lp.leftMargin + lp.rightMargin, lp.width);
         }
 
-        int slotLeft = getSlotLeft(contentLeft, contentWidth, visibleChildCount, childSlotIndex);
-        int slotRight = getSlotRight(contentLeft, contentWidth, visibleChildCount, childSlotIndex);
-        int slotWidth = Math.max(0, slotRight - slotLeft);
+        int slotWidth = slotWidths[childSlotIndex];
         int availableInSlot = Math.max(0, slotWidth - lp.leftMargin - lp.rightMargin);
         return makeChildWidthSpec(lp.width, availableInSlot);
     }
@@ -194,17 +189,18 @@ public class OperateBarLayout extends FrameLayout {
     }
 
     private void layoutChildrenEvenly() {
-        int visibleChildCount = countVisibleChildren();
-        if (visibleChildCount == 0) {
-            return;
-        }
-
         int contentLeft = getPaddingLeft();
         int contentRight = getWidth() - getPaddingRight();
         int contentBottom = getHeight() - getPaddingBottom();
         int contentWidth = Math.max(0, contentRight - contentLeft);
 
+        int[] slotWidths = buildSlotWidths(contentWidth);
+        if (slotWidths.length == 0) {
+            return;
+        }
+
         int slotIndex = 0;
+        int currentSlotLeft = contentLeft;
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             if (child == decorView || child.getVisibility() == View.GONE) {
@@ -215,9 +211,8 @@ public class OperateBarLayout extends FrameLayout {
             int childWidth = child.getMeasuredWidth();
             int childHeight = child.getMeasuredHeight();
 
-            int slotLeft = getSlotLeft(contentLeft, contentWidth, visibleChildCount, slotIndex);
-            int slotRight = getSlotRight(contentLeft, contentWidth, visibleChildCount, slotIndex);
-            float slotCenter = (slotLeft + slotRight) / 2f;
+            int currentSlotRight = currentSlotLeft + slotWidths[slotIndex];
+            float slotCenter = (currentSlotLeft + currentSlotRight) / 2f;
             int childLeft = Math.round(slotCenter - (childWidth / 2f) + ((lp.leftMargin - lp.rightMargin) / 2f));
 
             int minLeft = contentLeft + lp.leftMargin;
@@ -231,6 +226,8 @@ public class OperateBarLayout extends FrameLayout {
             int childBottom = contentBottom - lp.bottomMargin;
             int childTop = childBottom - childHeight;
             child.layout(childLeft, childTop, childLeft + childWidth, childBottom);
+
+            currentSlotLeft = currentSlotRight;
             slotIndex++;
         }
     }
@@ -283,12 +280,56 @@ public class OperateBarLayout extends FrameLayout {
         return generateLayoutParams(params);
     }
 
-    private int getSlotLeft(int contentLeft, int contentWidth, int totalSlots, int slotIndex) {
-        return contentLeft + (contentWidth * slotIndex) / totalSlots;
-    }
+    /**
+     * 计算每个可见子 view 的槽位宽度。
+     * <p>
+     * 规则：
+     * <ul>
+     *   <li>isPrimary 且 layout_width 为固定 dp 值的子 view，直接以该值作为槽位宽度</li>
+     *   <li>其余子 view（含 isPrimary 但 layout_width 为 MATCH_PARENT / WRAP_CONTENT 者）
+     *       等分扣除固定槽后的剩余宽度</li>
+     * </ul>
+     */
+    private int[] buildSlotWidths(int contentWidth) {
+        // 第一遍：统计固定槽总宽与等分槽数量
+        int fixedTotal = 0;
+        int equalCount = 0;
+        int visibleCount = 0;
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child == decorView || child.getVisibility() == View.GONE) continue;
+            LayoutParams lp = asLayoutParams(child.getLayoutParams());
+            if (lp.isPrimary && lp.width >= 0) {
+                fixedTotal += lp.width;
+            } else {
+                equalCount++;
+            }
+            visibleCount++;
+        }
 
-    private int getSlotRight(int contentLeft, int contentWidth, int totalSlots, int slotIndex) {
-        return contentLeft + (contentWidth * (slotIndex + 1)) / totalSlots;
+        if (visibleCount == 0) return new int[0];
+
+        int remainingWidth = Math.max(0, contentWidth - fixedTotal);
+
+        // 第二遍：填充各槽位宽度，等分槽用整数算法避免浮点累积误差
+        int[] slotWidths = new int[visibleCount];
+        int slotIdx = 0;
+        int equalIdx = 0;
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child == decorView || child.getVisibility() == View.GONE) continue;
+            LayoutParams lp = asLayoutParams(child.getLayoutParams());
+            if (lp.isPrimary && lp.width >= 0) {
+                slotWidths[slotIdx] = lp.width;
+            } else {
+                int subLeft = equalCount > 0 ? (remainingWidth * equalIdx) / equalCount : 0;
+                int subRight = equalCount > 0 ? (remainingWidth * (equalIdx + 1)) / equalCount : 0;
+                slotWidths[slotIdx] = subRight - subLeft;
+                equalIdx++;
+            }
+            slotIdx++;
+        }
+        return slotWidths;
     }
 
     private int makeChildWidthSpec(int childLayoutWidth, int availableInSlot) {
