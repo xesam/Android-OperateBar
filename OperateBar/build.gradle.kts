@@ -37,7 +37,7 @@ dependencies {
 }
 
 mavenPublishing {
-    coordinates("io.github.xesam", "android-operatebar", "0.0.1")
+    coordinates("io.github.xesam", "android-operatebar", "0.0.2")
 
     pom {
         name.set("android-operatebar")
